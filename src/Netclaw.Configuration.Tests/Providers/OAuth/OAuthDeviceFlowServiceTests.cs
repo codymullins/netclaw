@@ -104,7 +104,7 @@ public class OAuthDeviceFlowServiceTests
 
         var timeProvider = new FakeTimeProvider();
         var service = new OAuthDeviceFlowService(new HttpClient(handler), timeProvider);
-        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://x.com/v", 60, 1);
+        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://example.com/v", 60, 1);
 
         var pollTask = service.PollForTokenAsync(TestConfig, deviceAuth, ct: TestContext.Current.CancellationToken);
 
@@ -127,7 +127,7 @@ public class OAuthDeviceFlowServiceTests
 
         var timeProvider = new FakeTimeProvider();
         var service = new OAuthDeviceFlowService(new HttpClient(handler), timeProvider);
-        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://x.com/v", 60, 1);
+        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://example.com/v", 60, 1);
 
         var pollTask = service.PollForTokenAsync(TestConfig, deviceAuth, ct: TestContext.Current.CancellationToken);
         timeProvider.Advance(TimeSpan.FromSeconds(1));
@@ -143,7 +143,7 @@ public class OAuthDeviceFlowServiceTests
 
         var timeProvider = new FakeTimeProvider();
         var service = new OAuthDeviceFlowService(new HttpClient(handler), timeProvider);
-        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://x.com/v", 60, 1);
+        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://example.com/v", 60, 1);
 
         var pollTask = service.PollForTokenAsync(TestConfig, deviceAuth, ct: TestContext.Current.CancellationToken);
         timeProvider.Advance(TimeSpan.FromSeconds(1));
@@ -159,7 +159,7 @@ public class OAuthDeviceFlowServiceTests
 
         var timeProvider = new FakeTimeProvider();
         var service = new OAuthDeviceFlowService(new HttpClient(handler), timeProvider);
-        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://x.com/v", 60, 1);
+        var deviceAuth = new DeviceAuthorizationResponse("dc", "UC", "https://example.com/v", 60, 1);
 
         using var cts = new CancellationTokenSource();
         var pollTask = service.PollForTokenAsync(TestConfig, deviceAuth, ct: cts.Token);
