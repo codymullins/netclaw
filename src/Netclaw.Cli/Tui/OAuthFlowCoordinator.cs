@@ -390,7 +390,13 @@ public sealed class OAuthFlowCoordinator : IDisposable
                     _requestRedraw();
                 }, ct);
 
-            // Step 3: Store result
+            // Step 3: Store result.
+            // Setting FlowState fires its reactive subscribers synchronously
+            // (InitWizardPage subscribes to advance to the validation sub-step).
+            // We rely on the onSuccess callback below — NOT on subscribers — to
+            // kick off the credential probe, so that the lifecycle of the probe
+            // CTS doesn't get torpedoed by a duplicate StartProbe call. See
+            // InitWizardPage.cs for the matching comment.
             Result = result;
             FlowState.Value = DeviceFlowState.Succeeded;
             _requestRedraw();

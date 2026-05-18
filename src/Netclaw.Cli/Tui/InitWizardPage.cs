@@ -113,11 +113,18 @@ public sealed class InitWizardPage : ReactivePage<InitWizardViewModel>
                 _stepContentNode?.Invalidate();
                 _helpTextNode?.Invalidate();
 
-                // Auto-advance to validation on success
+                // Auto-advance to validation on success.
+                // The coordinator's onSuccess callback (wired in
+                // ProviderStepViewModel.StartOAuthFlow) already calls
+                // StartProbe() with the fresh token, so we MUST NOT call it
+                // here too — doing so cancels the probe that onSuccess just
+                // started (this subscriber fires synchronously from
+                // FlowState.Value = Succeeded, which runs *before* the
+                // coordinator invokes onSuccess; the duplicate StartProbe
+                // races and torpedoes its own CTS).
                 if (state == DeviceFlowState.Succeeded)
                 {
                     ViewModel.ProviderStep.SetSubStep(3);
-                    ViewModel.ProviderStep.StartProbe();
                     _stepContentNode?.Invalidate();
                     _helpTextNode?.Invalidate();
                     ViewModel.RequestRedraw();
