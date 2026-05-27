@@ -39,6 +39,11 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
         Main = new ModelReference { Provider = "test-provider", ModelId = "test-model" }
     };
 
+    private static readonly Dictionary<string, ProviderEntry> DefaultProviders = new()
+    {
+        ["test-provider"] = new ProviderEntry { Type = "ollama" }
+    };
+
     private readonly string _tempBase = Path.Combine(Path.GetTempPath(), $"netclaw-status-test-{Guid.NewGuid():N}");
 
     private NetclawPaths CreatePaths() => new(_tempBase);
@@ -98,6 +103,7 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
             telemetryOptions: Options.Create(new TelemetryOptions()),
             modelCapabilities: DefaultModelCapabilities,
             modelSelection: DefaultModelSelection,
+            providers: DefaultProviders,
             daemonConfig: new DaemonConfig(),
             paths: CreatePaths());
 
@@ -121,6 +127,7 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
             telemetryOptions: Options.Create(new TelemetryOptions()),
             modelCapabilities: DefaultModelCapabilities,
             modelSelection: DefaultModelSelection,
+            providers: DefaultProviders,
             daemonConfig: new DaemonConfig(),
             paths: CreatePaths());
 
@@ -144,6 +151,7 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
             telemetryOptions: Options.Create(new TelemetryOptions()),
             modelCapabilities: DefaultModelCapabilities,
             modelSelection: DefaultModelSelection,
+            providers: DefaultProviders,
             daemonConfig: new DaemonConfig(),
             paths: CreatePaths());
 
@@ -206,6 +214,7 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
                 telemetryOptions: Options.Create(new TelemetryOptions()),
                 modelCapabilities: DefaultModelCapabilities,
                 modelSelection: DefaultModelSelection,
+                providers: DefaultProviders,
                 daemonConfig: new DaemonConfig(),
                 paths: CreatePaths(),
                 mcpClientManager: manager);
@@ -272,6 +281,7 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
             telemetryOptions: Options.Create(new TelemetryOptions()),
             modelCapabilities: DefaultModelCapabilities,
             modelSelection: DefaultModelSelection,
+            providers: DefaultProviders,
             daemonConfig: new DaemonConfig(),
             paths: paths,
             sqliteMemoryStore: sqliteStore);
@@ -308,6 +318,7 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
             telemetryOptions: Options.Create(new TelemetryOptions()),
             modelCapabilities: DefaultModelCapabilities,
             modelSelection: DefaultModelSelection,
+            providers: DefaultProviders,
             daemonConfig: new DaemonConfig(),
             paths: CreatePaths());
 
@@ -335,6 +346,7 @@ public sealed class DaemonRuntimeStatusServiceTests : IAsyncLifetime
             telemetryOptions: Options.Create(new TelemetryOptions()),
             modelCapabilities: DefaultModelCapabilities,
             modelSelection: DefaultModelSelection,
+            providers: DefaultProviders,
             daemonConfig: new DaemonConfig { DisableSelfUpdate = true },
             paths: CreatePaths());
 

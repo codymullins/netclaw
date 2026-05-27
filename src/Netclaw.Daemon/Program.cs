@@ -325,10 +325,13 @@ static NetclawPaths ConfigureConfigServices(IServiceCollection services, IConfig
     // TimeProvider (virtualized for testing)
     services.AddSingleton(TimeProvider.System);
 
-    // Providers and model resolution via plugin architecture
+    // Providers and model resolution via plugin architecture.
+    // Zero providers is legal — the daemon boots so first-run setup (pairing,
+    // doctor, wizard) can run before an LLM is configured. Sessions error out
+    // with a clear message at start-time when no provider is available, rather
+    // than crashing the whole daemon. ProviderReferenceValidator catches
+    // dangling Models.* → Providers references at host start.
     var providers = ProviderConfigurationLoader.Load(configuration.GetSection("Providers"));
-    if (providers.Count == 0)
-        providers = new() { ["local-ollama"] = new ProviderEntry() };
     var models = configuration.GetSection("Models")
         .Get<ModelSelection>() ?? new ModelSelection();
 
@@ -388,7 +391,7 @@ static void ConfigureDaemonServices(
     // matches a startup-bound resolution rather than first-session lazy hit.
     var providers = configuration.GetSection("Providers")
         .Get<Dictionary<string, ProviderEntry>>()
-        ?? new() { ["local-ollama"] = new ProviderEntry() };
+        ?? [];
     var mainProviderType = providers.TryGetValue(models.Main.Provider, out var mainProvider)
         ? mainProvider.Type
         : null;

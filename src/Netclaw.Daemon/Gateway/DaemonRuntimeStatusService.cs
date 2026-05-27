@@ -34,6 +34,7 @@ internal sealed class DaemonRuntimeStatusService(
     IOptions<TelemetryOptions> telemetryOptions,
     ModelCapabilities modelCapabilities,
     ModelSelection modelSelection,
+    Dictionary<string, ProviderEntry> providers,
     DaemonConfig daemonConfig,
     NetclawPaths paths,
     McpClientManager? mcpClientManager = null,
@@ -85,6 +86,7 @@ internal sealed class DaemonRuntimeStatusService(
                 ModelId = modelCapabilities.ModelId,
                 DisplayName = ModelIdNormalizer.GetDisplayName(modelCapabilities.ModelId),
                 Provider = modelSelection.Main.Provider,
+                ProviderStatus = ResolveProviderStatus(),
                 InputModalities = modelCapabilities.InputModalities.ToString(),
                 OutputModalities = modelCapabilities.OutputModalities.ToString(),
                 ContextWindow = modelCapabilities.ContextWindowTokens
@@ -343,6 +345,15 @@ internal sealed class DaemonRuntimeStatusService(
         {
             return null;
         }
+    }
+
+    private string ResolveProviderStatus()
+    {
+        if (providers.Count == 0)
+            return "no-providers";
+        return providers.ContainsKey(modelSelection.Main.Provider)
+            ? "configured"
+            : "missing";
     }
 
     internal static string ResolveOverallStatus(IReadOnlyList<DaemonRuntimeStatus.Connector> connectors)

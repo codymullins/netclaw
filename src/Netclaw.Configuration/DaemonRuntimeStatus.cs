@@ -91,6 +91,16 @@ public static class DaemonRuntimeStatus
 
         public required string Provider { get; init; }
 
+        /// <summary>
+        /// Whether the configured provider is usable. One of:
+        /// <c>configured</c> — provider entry exists and is wired up;
+        /// <c>missing</c> — Models.Main.Provider references a name that
+        /// isn't defined under Providers (sessions will fail to start);
+        /// <c>no-providers</c> — no providers are configured at all
+        /// (first-run state — daemon is up but cannot run sessions).
+        /// </summary>
+        public required string ProviderStatus { get; init; }
+
         public required string InputModalities { get; init; }
 
         public required string OutputModalities { get; init; }

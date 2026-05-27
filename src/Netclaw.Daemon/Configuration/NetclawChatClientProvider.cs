@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 // <copyright file="NetclawChatClientProvider.cs" company="Petabridge, LLC">
 //      Copyright (C) 2026 - 2026 Petabridge, LLC <https://petabridge.com>
 // </copyright>
@@ -11,27 +11,40 @@ namespace Netclaw.Daemon.Configuration;
 /// <summary>
 /// Resolves <see cref="IChatClient"/> instances by <see cref="ModelRole"/>
 /// using a <see cref="ProviderPluginFactory"/> and <see cref="ModelSelection"/>.
-/// Clients are created once at construction and reused for all requests.
+/// Clients are constructed lazily on the first <see cref="GetClient"/> call
+/// per role and reused thereafter, so a misconfigured Fallback or Compaction
+/// role does not sink daemon startup — only sessions that actually request
+/// the broken role surface the error.
 /// </summary>
 public sealed class NetclawChatClientProvider : IChatClientProvider
 {
-    private readonly IChatClient _main;
-    private readonly IChatClient? _fallback;
-    private readonly IChatClient? _compaction;
+    private readonly Lazy<IChatClient> _main;
+    private readonly Lazy<IChatClient>? _fallback;
+    private readonly Lazy<IChatClient>? _compaction;
 
     public NetclawChatClientProvider(ProviderPluginFactory factory, ModelSelection models)
     {
-        _main = factory.Create(models.Main);
-        _fallback = models.Fallback is not null
-            ? factory.Create(models.Fallback) : null;
-        _compaction = models.Compaction is not null
-            ? factory.Create(models.Compaction) : null;
+        _main = new Lazy<IChatClient>(
+            () => factory.Create(models.Main),
+            LazyThreadSafetyMode.ExecutionAndPublication);
+
+        _fallback = models.Fallback is { } fallback
+            ? new Lazy<IChatClient>(
+                () => factory.Create(fallback),
+                LazyThreadSafetyMode.ExecutionAndPublication)
+            : null;
+
+        _compaction = models.Compaction is { } compaction
+            ? new Lazy<IChatClient>(
+                () => factory.Create(compaction),
+                LazyThreadSafetyMode.ExecutionAndPublication)
+            : null;
     }
 
     public IChatClient GetClient(ModelRole role) => role switch
     {
-        ModelRole.Fallback => _fallback ?? _main,
-        ModelRole.Compaction => _compaction ?? _main,
-        _ => _main
+        ModelRole.Fallback => (_fallback ?? _main).Value,
+        ModelRole.Compaction => (_compaction ?? _main).Value,
+        _ => _main.Value
     };
 }
