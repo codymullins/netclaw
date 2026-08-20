@@ -441,6 +441,35 @@ public sealed class SessionHubAuthorizationTests : IDisposable
             ex.Message);
     }
 
+    [Theory]
+    [InlineData(ExposureMode.TailscaleServe)]
+    [InlineData(ExposureMode.TailscaleFunnel)]
+    [InlineData(ExposureMode.CloudflareTunnel)]
+    public async Task Tunnel_mode_daemon_host_bootstrap_device_over_loopback_can_invoke_daemon_pair(
+        ExposureMode mode)
+    {
+        // The device-pairing spec requires a path for a direct authenticated
+        // local control-plane request to mint a pairing code under remote-auth
+        // modes (openspec/specs/device-pairing/spec.md). In tunnel modes the
+        // daemon binds loopback only, so every identity a caller can obtain
+        // arrives over loopback, and the gate rejects them all. The on-host
+        // operator is locked out: `netclaw daemon pair` cannot succeed without
+        // a flip back to local mode, which reopens the SEC-005 window that
+        // PR #1185 closed. The bootstrap device token lives only in the daemon
+        // host's own secrets.json, so it is a reasonable proof of daemon-host
+        // identity. This test encodes the spec-level capability; the final
+        // mechanism may differ (for example a unix-socket control plane).
+        var hub = CreateSessionHub(
+            remoteIp: IPAddress.Loopback,
+            transport: nameof(TransportAuthenticity.Verified),
+            isBootstrapDevice: true,
+            exposureMode: mode);
+
+        var result = await hub.GeneratePairingCode();
+
+        Assert.Matches("^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$", result.FormattedCode);
+    }
+
     private SessionHub CreateSessionHub(
         IPAddress remoteIp,
         string transport,
