@@ -293,6 +293,37 @@ public sealed class PairingEndpointRouteBuilderExtensionsTests : IAsyncDisposabl
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
+    /// <summary>
+    /// A duplicate-name rejection must not burn the one-time code.
+    /// <see cref="PairingCodeService"/> documents codes as "consumed on first
+    /// successful exchange", and a 409 exchange is not successful. After a 409
+    /// the same unexpired code must stay redeemable with a unique name.
+    /// Today the handler consumes the code before the registry add, so the
+    /// retry gets 404 and the operator must mint a new code on the daemon
+    /// host. Observed in production on 2026-08-20 (409, then 404s inside the
+    /// code's TTL).
+    /// </summary>
+    [Fact]
+    public async Task Exchange_conflict_does_not_burn_pending_code()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (_, existingDevice) = DeviceTestHelpers.MakeDevice("laptop", _time.GetUtcNow());
+        await _registry.AddAsync(existingDevice, ct);
+
+        var (code, _) = _pairingCodeService.GenerateCode();
+
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var conflict = await client.PostAsJsonAsync("/api/pair/exchange",
+            new { code, deviceName = "laptop" }, ct);
+        Assert.Equal(HttpStatusCode.Conflict, conflict.StatusCode);
+
+        var retry = await client.PostAsJsonAsync("/api/pair/exchange",
+            new { code, deviceName = "laptop-2" }, ct);
+        Assert.Equal(HttpStatusCode.OK, retry.StatusCode);
+    }
+
     /// <summary>Coverage from old tests: code already consumed → 404 on second attempt.</summary>
     [Fact]
     public async Task Exchange_returns_404_when_code_already_consumed()
