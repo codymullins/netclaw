@@ -89,6 +89,20 @@ absent, Netclaw uses `Security.ShellExecutionMode`, then the posture default
 (`HostAllowed` for Personal). `SandboxOnly` always denies today, because
 Netclaw has no sandbox backend.
 
+### Interactive Team channels
+
+Team does not expose `shell_execute` by default. An operator can enable an
+approval card for an interactive Team channel only when all three conditions hold:
+
+1. The effective shell mode is `HostAllowed`.
+2. The Team `AllowedTools` list includes `shell_execute`.
+3. The Team `ApprovalPolicy.ToolOverrides` entry sets `shell_execute` to `Approval`.
+
+`Tools.ShellMode` can set the shell mode. The security deployment default can
+also set the effective mode. The runtime rejects a Team `Auto` override. The
+runtime also rejects unattended Team shell calls. Public sessions cannot run
+shell commands.
+
 ### Headless and unattended runs
 
 Headless chat (`netclaw chat -p "prompt"`), reminders, and webhooks cannot show

@@ -3,7 +3,7 @@ name: netclaw-operations
 description: "REQUIRED when the user asks about scheduling, reminders, cron jobs, timers, background jobs, diagnostics, troubleshooting, MCP tools, daemon health, identity updates, or Netclaw capabilities and self-maintenance."
 metadata:
   author: netclaw
-  version: "2.108.1"
+  version: "2.109.0"
 ---
 
 # Netclaw Operations
@@ -88,6 +88,37 @@ operation. Common cases: `netclaw status`, `netclaw doctor`,
 `netclaw secrets set`, `netclaw mcp ...`, `netclaw skill sync|validate|issues|source`,
 `netclaw sessions`, `netclaw stats`, `netclaw update`, and
 `netclaw memory backfill-embeddings`.
+
+## Microsoft Teams configuration
+
+Use `netclaw config` to configure Microsoft Teams. The TUI stores canonical
+Teams and Entra IDs. It shows names only as cached presentation labels.
+
+Use an authenticated source for manual IDs. The TUI accepts Entra object IDs
+in canonical lowercase `D` format and rejects invalid IDs before it saves.
+
+Use the Group Chat picker only when Graph has `Chat.ReadBasic.All`. This
+permission is optional. Manual Group Chat IDs still work without it.
+
+Use `Add a channel or Group Chat` > `Group Chat` to search by chat title.
+Enter a partial or full title in `Group Chat name`. Do not enter a user name.
+The application reads tenant user IDs and chat metadata in bounded batches.
+It uses `User.Read.All` and `Chat.ReadBasic.All`; it does not read messages.
+One search action advances across batches and retains matches. The status
+shows cumulative users, chat records, requests, and matches. A user's count
+advances only when its chat pages finish. Chat records can include duplicates.
+Use `Stop search` or `Ctrl+S` to pause. Select `Resume search` after a stop or
+automatic run limit. Resume preserves matches and the last successful
+checkpoint. An incomplete scan or Graph error does not prove that the chat
+is absent. Discovery grants no access.
+Use a canonical chat ID if the chat has no title or discovery is unavailable.
+
+When you remove the final global Teams user or group, explain the result.
+Allowed channels without exact grants accept verified senders. Personal and
+Group Chat ingress remains denied until a global principal exists.
+
+The TUI asks for confirmation before it removes an exact channel principal.
+It names the channel and explains the effective sender rule after activation.
 
 ## File and Shell Selection
 
